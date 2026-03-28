@@ -5,150 +5,206 @@ struct SettingsView: View {
     @ObservedObject var appModel: AppModel
 
     var body: some View {
-        Form {
-            Section("Behavior") {
-                LabeledContent("App name", value: "FlowState")
-                LabeledContent("Language", value: "English-first")
+        VStack(alignment: .leading, spacing: 18) {
+            shortcutsSection
+            transcriptionSection
+            audioSection
+            vocabularySection
+            permissionsSection
+            versionFooter
+        }
+    }
 
-                shortcutSection(
+    private var shortcutsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            FlowSectionHeader(title: "Shortcuts")
+            FlowSectionCard {
+                ShortcutSettingRow(
                     title: HotkeyAction.holdToTalk.displayName,
-                    description: HotkeyAction.holdToTalk.shortDescription,
-                    ruleDescription: HotkeyAction.holdToTalk.shortcutRuleDescription,
+                    description: "Modifier keys only. Good for quick dictation bursts.",
+                    hint: "Try \(appModel.holdToTalkBinding.shortcut.symbolDisplayName) or something like ⌃ ⌥",
                     isEnabled: holdEnabledBinding,
                     shortcut: Binding(
                         get: { appModel.holdToTalkBinding.shortcut },
                         set: { appModel.setShortcut($0, for: .holdToTalk) }
-                    )
+                    ),
+                    onRecordingChange: appModel.setShortcutRecordingActive
                 )
 
-                shortcutSection(
-                    title: HotkeyAction.tapToStartStop.displayName,
-                    description: HotkeyAction.tapToStartStop.shortDescription,
-                    ruleDescription: HotkeyAction.tapToStartStop.shortcutRuleDescription,
+                insetDivider
+
+                ShortcutSettingRow(
+                    title: "Press to Start",
+                    description: "Starts recording until you stop from the shortcut, next key press, or pill controls.",
+                    hint: "Needs 3+ keys. Try \(appModel.tapToStartStopBinding.shortcut.symbolDisplayName) or ⌃ ⌥ SPACE",
                     isEnabled: tapEnabledBinding,
                     shortcut: Binding(
                         get: { appModel.tapToStartStopBinding.shortcut },
                         set: { appModel.setShortcut($0, for: .tapToStartStop) }
-                    )
+                    ),
+                    onRecordingChange: appModel.setShortcutRecordingActive
                 )
-
-                if let hotkeyConflictMessage = appModel.hotkeyConflictMessage {
-                    Text(hotkeyConflictMessage)
-                        .font(.system(size: 12.5))
-                        .foregroundStyle(.orange)
-                }
-
-                if let shortcutValidationMessage = appModel.shortcutValidationMessage {
-                    Text(shortcutValidationMessage)
-                        .font(.system(size: 12.5))
-                        .foregroundStyle(.red)
-                }
-            }
-
-            Section("Transcription") {
-                LabeledContent("Current backend", value: appModel.backendDescription)
-                LabeledContent("Recommended", value: "Base English + Greedy")
-
-                Picker("Model", selection: modelBinding) {
-                    ForEach(WhisperModelOption.allCases) { model in
-                        Text("\(model.displayName) (\(model.approximateSize))")
-                            .tag(model)
-                    }
-                }
-                .pickerStyle(.menu)
-
-                Picker("Decoding", selection: decodingBinding) {
-                    ForEach(WhisperDecodingMode.allCases) { mode in
-                        Text(mode.displayName)
-                            .tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-
-                Toggle("Keep context across segments", isOn: keepContextBinding)
-                Toggle("Trim leading and trailing silence", isOn: trimSilenceBinding)
-                Toggle("Normalize quiet recordings", isOn: normalizeAudioBinding)
-                Toggle("Enable live subtitles", isOn: livePreviewBinding)
-                Toggle("Stop press-to-start/stop dictation on next key press", isOn: tapStopsOnNextKeyPressBinding)
-
-                Button("Reset To Fast Preset") {
-                    appModel.resetToRecommendedPreset()
-                }
-
-                Text("Current preset: \(appModel.transcriptionConfiguration.summary)")
-                    .font(.system(size: 12.5))
-                    .foregroundStyle(.secondary)
-                Text("When enabled, FlowState transcribes live and shows subtitles above the bottom pill. When disabled, the pill remains visible but live transcription stays off until release.")
-                    .font(.system(size: 12.5))
-                    .foregroundStyle(.secondary)
-                Text("Modifier-only shortcuts like `Control + Option` are supported. For press-to-start/stop dictation, you can also stop recording on the next key press instead of repeating the same shortcut.")
-                    .font(.system(size: 12.5))
-                    .foregroundStyle(.secondary)
-            }
-
-            Section("Vocabulary") {
-                Text("Add one preferred term per line. Use `Canonical: alias 1, alias 2` to rewrite common misrecognitions after transcription and hint the model during decoding.")
-                    .font(.system(size: 12.5))
-                    .foregroundStyle(.secondary)
-
-                TextEditor(text: vocabularyBinding)
-                    .font(.system(size: 12.5, design: .monospaced))
-                    .frame(minHeight: 110)
-            }
-
-            Section("Permissions") {
-                LabeledContent("Microphone", value: appModel.permissions.microphoneGranted ? "Granted" : "Missing")
-                LabeledContent("Accessibility", value: appModel.permissions.accessibilityGranted ? "Granted" : "Missing")
-                LabeledContent("Input Monitoring", value: appModel.permissions.inputMonitoringGranted ? "Granted" : "Missing")
-                Text("macOS permissions are tied to the exact app bundle path and signature. If you move or replace the app, re-enable that specific copy in System Settings.")
-                    .font(.system(size: 12.5))
-                    .foregroundStyle(.secondary)
             }
         }
-        .formStyle(.grouped)
-        .padding(.top, 12)
     }
 
-    @ViewBuilder
-    private func shortcutSection(
-        title: String,
-        description: String,
-        ruleDescription: String,
-        isEnabled: Binding<Bool>,
-        shortcut: Binding<HotkeyConfiguration>
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Toggle(title, isOn: isEnabled)
-            Text(description)
-                .font(.system(size: 12.5))
-                .foregroundStyle(.secondary)
-            Text(ruleDescription)
-                .font(.system(size: 12))
-                .foregroundStyle(.tertiary)
+    private var transcriptionSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            FlowSectionHeader(title: "Transcription")
+            FlowSectionCard {
+                FlowInfoRow(label: "Language", value: "English-first")
+                insetDivider
 
-            ShortcutRecorderField(
-                shortcut: shortcut,
-                onRecordingChange: { isRecording in
-                    appModel.setShortcutRecordingActive(isRecording)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Model")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(FlowTheme.textPrimary)
+
+                    VStack(spacing: 8) {
+                        ForEach(WhisperModelOption.allCases) { model in
+                            ModelOptionRow(
+                                model: model,
+                                isSelected: appModel.transcriptionConfiguration.model == model
+                            ) {
+                                appModel.setWhisperModel(model)
+                            }
+                        }
+                    }
                 }
-            )
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+
+                insetDivider
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Decoding")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(FlowTheme.textPrimary)
+
+                    DecodingSegmentedControl(
+                        selection: Binding(
+                            get: { appModel.transcriptionConfiguration.decodingMode },
+                            set: { appModel.setDecodingMode($0) }
+                        )
+                    )
+                }
+                .padding(12)
+            }
         }
-        .padding(.vertical, 4)
     }
 
-    private var modelBinding: Binding<WhisperModelOption> {
-        Binding(
-            get: { appModel.transcriptionConfiguration.model },
-            set: { appModel.setWhisperModel($0) }
-        )
+    private var audioSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            FlowSectionHeader(title: "Audio")
+            FlowSectionCard {
+                SettingsToggleRow(
+                    title: "Trim silence",
+                    description: "Removes dead air before and after speech.",
+                    isOn: trimSilenceBinding
+                )
+                insetDivider
+                SettingsToggleRow(
+                    title: "Normalize audio",
+                    description: "Brings quiet recordings into a steadier range.",
+                    isOn: normalizeAudioBinding
+                )
+                insetDivider
+                SettingsToggleRow(
+                    title: "Keep context",
+                    description: "Helps punctuation and continuity during longer dictation.",
+                    isOn: keepContextBinding
+                )
+                insetDivider
+                SettingsToggleRow(
+                    title: "Live subtitles",
+                    description: "Shows live transcription above the pill while dictating.",
+                    isOn: livePreviewBinding
+                )
+                insetDivider
+                SettingsToggleRow(
+                    title: "Stop on next key press",
+                    description: "For press-to-start mode, stop dictation as soon as you begin typing.",
+                    isOn: tapStopsOnNextKeyPressBinding
+                )
+            }
+        }
     }
 
-    private var decodingBinding: Binding<WhisperDecodingMode> {
-        Binding(
-            get: { appModel.transcriptionConfiguration.decodingMode },
-            set: { appModel.setDecodingMode($0) }
-        )
+    private var vocabularySection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            FlowSectionHeader(title: "Vocabulary")
+            FlowSectionCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Custom terms and aliases")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(FlowTheme.textPrimary)
+
+                    Text("One preferred term per line. Example: `Epic Games: Epic`")
+                        .font(.system(size: 12))
+                        .foregroundStyle(FlowTheme.textSecondary)
+
+                    TextEditor(text: vocabularyBinding)
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundStyle(FlowTheme.textPrimary)
+                        .scrollContentBackground(.hidden)
+                        .frame(minHeight: 88)
+                        .padding(8)
+                        .background(FlowTheme.background, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .stroke(FlowTheme.border, lineWidth: 1)
+                        )
+                }
+                .padding(12)
+            }
+        }
+    }
+
+    private var permissionsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            FlowSectionHeader(title: "Permissions")
+            FlowSectionCard {
+                PermissionRow(
+                    title: "Microphone",
+                    isGranted: appModel.permissions.microphoneGranted,
+                    actionTitle: "Request",
+                    action: appModel.requestMicrophoneAccess
+                )
+                insetDivider
+                PermissionRow(
+                    title: "Accessibility",
+                    isGranted: appModel.permissions.accessibilityGranted,
+                    actionTitle: "Open Settings",
+                    action: appModel.requestAccessibilityAccess
+                )
+                insetDivider
+                PermissionRow(
+                    title: "Input Monitoring",
+                    isGranted: appModel.permissions.inputMonitoringGranted,
+                    actionTitle: "Open Settings",
+                    action: appModel.requestInputMonitoringAccess
+                )
+            }
+        }
+    }
+
+    private var versionFooter: some View {
+        Text("FlowState \(appVersion)")
+            .font(.system(size: 11))
+            .foregroundStyle(FlowTheme.textTertiary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.bottom, 4)
+    }
+
+    private var appVersion: String {
+        let short = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+        return [short, build].compactMap { $0 }.joined(separator: " • ")
+    }
+
+    private var insetDivider: some View {
+        Divider()
+            .overlay(FlowTheme.border)
+            .padding(.leading, 12)
     }
 
     private var keepContextBinding: Binding<Bool> {
@@ -208,6 +264,209 @@ struct SettingsView: View {
     }
 }
 
+private struct FlowInfoRow: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(FlowTheme.textPrimary)
+            Spacer()
+            Text(value)
+                .font(.system(size: 13))
+                .foregroundStyle(FlowTheme.textSecondary)
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 40)
+    }
+}
+
+private struct SettingsToggleRow: View {
+    let title: String
+    let description: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(FlowTheme.textPrimary)
+                Text(description)
+                    .font(.system(size: 12))
+                    .foregroundStyle(FlowTheme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+
+            Toggle("", isOn: $isOn)
+                .labelsHidden()
+                .toggleStyle(FlowToggleStyle())
+        }
+        .padding(12)
+    }
+}
+
+private struct PermissionRow: View {
+    let title: String
+    let isGranted: Bool
+    let actionTitle: String
+    let action: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(title)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(FlowTheme.textPrimary)
+
+            Spacer()
+
+            PermissionBadge(isGranted: isGranted)
+
+            if !isGranted {
+                Button(actionTitle, action: action)
+                    .buttonStyle(.plain)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(FlowTheme.accent)
+            }
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 44)
+    }
+}
+
+private struct PermissionBadge: View {
+    let isGranted: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(isGranted ? FlowTheme.success : FlowTheme.error)
+                .frame(width: 6, height: 6)
+
+            Text(isGranted ? "Granted" : "Not granted")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(isGranted ? FlowTheme.success : FlowTheme.error)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(isGranted ? FlowTheme.successSubtle : FlowTheme.errorSubtle, in: Capsule(style: .continuous))
+    }
+}
+
+private struct ModelOptionRow: View {
+    let model: WhisperModelOption
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
+                    .font(.system(size: 13))
+                    .foregroundStyle(isSelected ? FlowTheme.accent : FlowTheme.textTertiary)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(model.displayName.replacingOccurrences(of: " English", with: ""))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(FlowTheme.textPrimary)
+
+                    Text("\(model.approximateSize) • \(model.qualityDescriptor)")
+                        .font(.system(size: 12))
+                        .foregroundStyle(FlowTheme.textSecondary)
+                }
+
+                Spacer()
+            }
+            .padding(10)
+            .background(isSelected ? FlowTheme.subtle : FlowTheme.background, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .stroke(isSelected ? FlowTheme.borderStrong : FlowTheme.border, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct DecodingSegmentedControl: View {
+    @Binding var selection: WhisperDecodingMode
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(WhisperDecodingMode.allCases) { mode in
+                Button {
+                    selection = mode
+                } label: {
+                    Text(mode.productLabel)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(selection == mode ? FlowTheme.textPrimary : FlowTheme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 28)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(selection == mode ? FlowTheme.elevated : Color.clear)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .stroke(selection == mode ? FlowTheme.borderStrong : Color.clear, lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(FlowTheme.subtle, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(FlowTheme.border, lineWidth: 1)
+        )
+    }
+}
+
+private struct ShortcutSettingRow: View {
+    let title: String
+    let description: String
+    let hint: String
+    @Binding var isEnabled: Bool
+    @Binding var shortcut: HotkeyConfiguration
+    let onRecordingChange: (Bool) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(FlowTheme.textPrimary)
+
+                    Text(description)
+                        .font(.system(size: 12))
+                        .foregroundStyle(FlowTheme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: $isEnabled)
+                    .labelsHidden()
+                    .toggleStyle(FlowToggleStyle())
+            }
+
+            ShortcutRecorderField(shortcut: $shortcut, onRecordingChange: onRecordingChange)
+                .frame(maxWidth: .infinity, minHeight: 42)
+
+            Text(hint)
+                .font(.system(size: 11))
+                .foregroundStyle(FlowTheme.textTertiary)
+        }
+        .padding(12)
+    }
+}
+
 struct ShortcutRecorderField: NSViewRepresentable {
     @Binding var shortcut: HotkeyConfiguration
     var onRecordingChange: (Bool) -> Void
@@ -238,7 +497,7 @@ final class ShortcutRecorderContainerView: NSView {
     var shortcut: HotkeyConfiguration = .defaultHoldToTalk {
         didSet {
             guard !isRecording else { return }
-            recorderButton.title = shortcut.displayName
+            updateButtonTitle()
         }
     }
 
@@ -247,8 +506,8 @@ final class ShortcutRecorderContainerView: NSView {
     private var bestModifierOnlyShortcut: HotkeyConfiguration?
     private var isRecording = false {
         didSet {
-            recorderButton.title = isRecording ? "Type shortcut" : shortcut.displayName
-            recorderButton.contentTintColor = isRecording ? .systemBlue : .labelColor
+            recorderButton.contentTintColor = isRecording ? .systemOrange : .labelColor
+            updateButtonTitle()
             onRecordingChange?(isRecording)
             if !isRecording {
                 pendingModifierOnlyShortcut = false
@@ -265,12 +524,19 @@ final class ShortcutRecorderContainerView: NSView {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
 
-        recorderButton.bezelStyle = .rounded
-        recorderButton.font = .systemFont(ofSize: 12.5, weight: .medium)
+        wantsLayer = true
+        layer?.cornerRadius = 8
+        layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        layer?.borderWidth = 1
+        layer?.borderColor = NSColor.separatorColor.cgColor
+
+        recorderButton.isBordered = false
+        recorderButton.font = .monospacedSystemFont(ofSize: 11.5, weight: .medium)
+        recorderButton.alignment = .left
         recorderButton.target = self
         recorderButton.action = #selector(beginRecording)
-        recorderButton.title = shortcut.displayName
         addSubview(recorderButton)
+        updateButtonTitle()
     }
 
     @available(*, unavailable)
@@ -280,11 +546,11 @@ final class ShortcutRecorderContainerView: NSView {
 
     override func layout() {
         super.layout()
-        recorderButton.frame = bounds
+        recorderButton.frame = bounds.insetBy(dx: 10, dy: 8)
     }
 
     override var intrinsicContentSize: NSSize {
-        NSSize(width: 220, height: 30)
+        NSSize(width: 220, height: 42)
     }
 
     @objc
@@ -333,8 +599,8 @@ final class ShortcutRecorderContainerView: NSView {
         }
 
         let modifierFlags = event.modifierFlags.intersection([.command, .option, .control, .shift])
-        let preview = HotkeyConfiguration.modifierDisplayName(for: HotkeyConfiguration.carbonModifiers(for: modifierFlags))
-        recorderButton.title = preview.isEmpty ? "Type shortcut" : "\(preview) + …"
+        let preview = HotkeyConfiguration.symbolModifierDisplayName(for: HotkeyConfiguration.carbonModifiers(for: modifierFlags))
+        recorderButton.title = preview.isEmpty ? "Press your shortcut keys…" : "\(preview) …"
 
         if modifierFlags.isEmpty {
             if pendingModifierOnlyShortcut {
@@ -358,12 +624,24 @@ final class ShortcutRecorderContainerView: NSView {
         }
     }
 
-    private static func isModifierOnlyKey(_ keyCode: UInt16) -> Bool {
-        [54, 55, 56, 57, 58, 59, 60, 61, 62].contains(Int(keyCode))
+    private func updateButtonTitle() {
+        recorderButton.title = isRecording ? "Press your shortcut keys…" : shortcut.symbolDisplayName
+        layer?.borderColor = (isRecording ? NSColor.systemOrange : NSColor.separatorColor).cgColor
     }
 
     private func shouldPromoteModifierOnlyShortcut(_ candidate: HotkeyConfiguration) -> Bool {
-        guard let bestModifierOnlyShortcut else { return true }
-        return candidate.carbonModifiers.nonzeroBitCount >= bestModifierOnlyShortcut.carbonModifiers.nonzeroBitCount
+        guard let currentBest = bestModifierOnlyShortcut else {
+            return true
+        }
+        return candidate.componentCount >= currentBest.componentCount
+    }
+
+    private static func isModifierOnlyKey(_ keyCode: UInt16) -> Bool {
+        switch keyCode {
+        case 54, 55, 56, 57, 58, 59, 60, 61, 62:
+            return true
+        default:
+            return false
+        }
     }
 }

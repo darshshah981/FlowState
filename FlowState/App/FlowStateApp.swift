@@ -8,13 +8,15 @@ struct FlowStateApp: App {
     var body: some Scene {
         MenuBarExtra("FlowState", systemImage: appModel.menuBarSymbolName) {
             MenuContentView(appModel: appModel)
-                .frame(width: 380)
+                .frame(width: 320, height: 520)
         }
         .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView(appModel: appModel)
-                .frame(width: 460, height: 460)
+                .padding(18)
+                .frame(width: 420, height: 560)
+                .background(FlowTheme.background)
         }
     }
 }

@@ -104,6 +104,19 @@ enum WhisperModelOption: String, CaseIterable, Identifiable, Sendable {
             return "~1.5 GB"
         }
     }
+
+    var qualityDescriptor: String {
+        switch self {
+        case .tinyEnglish:
+            return "Fastest"
+        case .baseEnglish:
+            return "Balanced"
+        case .smallEnglish:
+            return "Precise"
+        case .mediumEnglish:
+            return "High"
+        }
+    }
 }
 
 enum WhisperDecodingMode: String, CaseIterable, Identifiable, Sendable {
@@ -127,6 +140,15 @@ enum WhisperDecodingMode: String, CaseIterable, Identifiable, Sendable {
             return "greedy"
         case .beamSearch:
             return "beam"
+        }
+    }
+
+    var productLabel: String {
+        switch self {
+        case .greedy:
+            return "Fast"
+        case .beamSearch:
+            return "Accurate"
         }
     }
 }
@@ -171,6 +193,18 @@ struct PreviewTranscript: Sendable, Equatable {
         [confirmedText, unconfirmedText]
             .filter { !$0.isEmpty }
             .joined(separator: confirmedText.isEmpty || unconfirmedText.isEmpty ? "" : " ")
+    }
+}
+
+struct TranscriptHistoryItem: Identifiable, Codable, Equatable, Sendable {
+    let id: UUID
+    let text: String
+    let createdAt: Date
+
+    init(id: UUID = UUID(), text: String, createdAt: Date = .now) {
+        self.id = id
+        self.text = text
+        self.createdAt = createdAt
     }
 }
 
@@ -330,6 +364,21 @@ struct HotkeyConfiguration: Equatable, Sendable {
         return modifiers.isEmpty ? keyDisplay : "\(modifiers) + \(keyDisplay)"
     }
 
+    var symbolDisplayName: String {
+        let parts = symbolParts
+        return parts.isEmpty ? "Shortcut" : parts.joined(separator: " ")
+    }
+
+    var symbolParts: [String] {
+        var parts: [String] = []
+        if carbonModifiers & UInt32(controlKey) != 0 { parts.append("⌃") }
+        if carbonModifiers & UInt32(optionKey) != 0 { parts.append("⌥") }
+        if carbonModifiers & UInt32(shiftKey) != 0 { parts.append("⇧") }
+        if carbonModifiers & UInt32(cmdKey) != 0 { parts.append("⌘") }
+        if !isModifierOnly && !keyDisplay.isEmpty { parts.append(Self.symbolKeyName(for: keyDisplay)) }
+        return parts
+    }
+
     var isEmpty: Bool {
         keyDisplay.isEmpty && carbonModifiers == 0
     }
@@ -392,6 +441,15 @@ struct HotkeyConfiguration: Equatable, Sendable {
         return parts.joined(separator: " + ")
     }
 
+    static func symbolModifierDisplayName(for carbonModifiers: UInt32) -> String {
+        var parts: [String] = []
+        if carbonModifiers & UInt32(controlKey) != 0 { parts.append("⌃") }
+        if carbonModifiers & UInt32(optionKey) != 0 { parts.append("⌥") }
+        if carbonModifiers & UInt32(shiftKey) != 0 { parts.append("⇧") }
+        if carbonModifiers & UInt32(cmdKey) != 0 { parts.append("⌘") }
+        return parts.joined(separator: " ")
+    }
+
     private static func keyDisplay(for keyCode: UInt16, characters: String?) -> String {
         if let characters {
             let trimmed = characters.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -440,6 +498,31 @@ struct HotkeyConfiguration: Equatable, Sendable {
             return "Escape"
         default:
             return text.count == 1 ? text.uppercased() : text.capitalized
+        }
+    }
+
+    private static func symbolKeyName(for text: String) -> String {
+        switch text {
+        case "Space":
+            return "SPACE"
+        case "Return":
+            return "RETURN"
+        case "Tab":
+            return "TAB"
+        case "Delete":
+            return "DELETE"
+        case "Escape":
+            return "ESC"
+        case "Left Arrow":
+            return "←"
+        case "Right Arrow":
+            return "→"
+        case "Down Arrow":
+            return "↓"
+        case "Up Arrow":
+            return "↑"
+        default:
+            return text.uppercased()
         }
     }
 }

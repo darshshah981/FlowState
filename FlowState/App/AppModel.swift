@@ -27,6 +27,7 @@ final class AppModel: ObservableObject {
         static let tapKeyCode = "FlowState.tapKeyCode"
         static let tapModifiers = "FlowState.tapModifiers"
         static let tapKeyDisplay = "FlowState.tapKeyDisplay"
+        static let transcriptHistory = "FlowState.transcriptHistory"
         static let didMigrateToFastDefaults = "FlowState.didMigrateToFastDefaults"
     }
 
@@ -34,10 +35,12 @@ final class AppModel: ObservableObject {
     @Published private(set) var state: DictationSessionState = .idle
     @Published private(set) var hudState = HUDState.idle
     @Published private(set) var lastTranscript = ""
+    @Published private(set) var transcriptHistory: [TranscriptHistoryItem]
     @Published private(set) var livePreviewConfirmedText = ""
     @Published private(set) var livePreviewUnconfirmedText = ""
     @Published private(set) var lastError: String?
     @Published private(set) var shortcutValidationMessage: String?
+    @Published private(set) var copiedTranscriptID: UUID?
     @Published private(set) var backendDescription = "Loading local Whisper backend"
     @Published private(set) var transcriptionConfiguration: TranscriptionConfiguration
     @Published var menuScreen: MenuScreen = .home
@@ -59,6 +62,7 @@ final class AppModel: ObservableObject {
         self.transcriptionConfiguration = AppModel.loadConfiguration(defaults: defaults)
         self.holdToTalkBinding = initialHoldBinding
         self.tapToStartStopBinding = initialTapBinding
+        self.transcriptHistory = AppModel.loadTranscriptHistory(defaults: defaults)
 
         let permissionsService = PermissionsService()
         self.permissionsService = permissionsService
@@ -212,6 +216,10 @@ final class AppModel: ObservableObject {
     func setHoldToTalkEnabled(_ isEnabled: Bool) {
         guard holdToTalkBinding.isEnabled != isEnabled else { return }
         holdToTalkBinding.isEnabled = isEnabled
+        if isEnabled, tapToStartStopBinding.isEnabled {
+            tapToStartStopBinding.isEnabled = false
+            persist(binding: tapToStartStopBinding)
+        }
         persist(binding: holdToTalkBinding)
         refreshRegisteredHotkeys()
     }
@@ -219,6 +227,10 @@ final class AppModel: ObservableObject {
     func setTapToStartStopEnabled(_ isEnabled: Bool) {
         guard tapToStartStopBinding.isEnabled != isEnabled else { return }
         tapToStartStopBinding.isEnabled = isEnabled
+        if isEnabled, holdToTalkBinding.isEnabled {
+            holdToTalkBinding.isEnabled = false
+            persist(binding: holdToTalkBinding)
+        }
         persist(binding: tapToStartStopBinding)
         refreshRegisteredHotkeys()
     }
@@ -249,6 +261,20 @@ final class AppModel: ObservableObject {
         coordinator.setHotkeysPaused(isActive)
     }
 
+    func copyTranscript(_ item: TranscriptHistoryItem) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(item.text, forType: .string)
+        copiedTranscriptID = item.id
+
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(1.2))
+            if self?.copiedTranscriptID == item.id {
+                self?.copiedTranscriptID = nil
+            }
+        }
+    }
+
     private var currentHotkeyBindings: [HotkeyBinding] {
         Self.currentHotkeyBindings(hold: holdToTalkBinding, tap: tapToStartStopBinding)
     }
@@ -264,6 +290,7 @@ final class AppModel: ObservableObject {
 
         coordinator.onTranscript = { [weak self] transcript in
             self?.lastTranscript = transcript
+            self?.appendTranscriptToHistory(transcript)
             self?.livePreviewConfirmedText = ""
             self?.livePreviewUnconfirmedText = ""
         }
@@ -316,6 +343,17 @@ final class AppModel: ObservableObject {
 
     private func refreshRegisteredHotkeys() {
         coordinator.updateHotkeyBindings(sanitizedHotkeyBindings())
+    }
+
+    private func appendTranscriptToHistory(_ transcript: String) {
+        let cleaned = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleaned.isEmpty else { return }
+
+        transcriptHistory.insert(TranscriptHistoryItem(text: cleaned), at: 0)
+        if transcriptHistory.count > 20 {
+            transcriptHistory = Array(transcriptHistory.prefix(20))
+        }
+        persistTranscriptHistory()
     }
 
     private func sanitizedHotkeyBindings() -> [HotkeyBinding] {
@@ -375,6 +413,11 @@ final class AppModel: ObservableObject {
         defaults.set(binding.shortcut.keyCode, forKey: keys.keyCode)
         defaults.set(binding.shortcut.carbonModifiers, forKey: keys.modifiers)
         defaults.set(binding.shortcut.keyDisplay, forKey: keys.keyDisplay)
+    }
+
+    private func persistTranscriptHistory() {
+        guard let data = try? JSONEncoder().encode(transcriptHistory) else { return }
+        defaults.set(data, forKey: PreferenceKey.transcriptHistory)
     }
 
     private static func loadConfiguration(defaults: UserDefaults) -> TranscriptionConfiguration {
@@ -458,6 +501,14 @@ final class AppModel: ObservableObject {
 
     private static func currentHotkeyBindings(hold: HotkeyBinding, tap: HotkeyBinding) -> [HotkeyBinding] {
         [hold, tap]
+    }
+
+    private static func loadTranscriptHistory(defaults: UserDefaults) -> [TranscriptHistoryItem] {
+        guard let data = defaults.data(forKey: PreferenceKey.transcriptHistory),
+              let history = try? JSONDecoder().decode([TranscriptHistoryItem].self, from: data) else {
+            return []
+        }
+        return history
     }
 
     private static func preferenceKeys(for action: HotkeyAction) -> (enabled: String, keyCode: String, modifiers: String, keyDisplay: String) {
