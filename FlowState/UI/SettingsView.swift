@@ -36,7 +36,7 @@ struct SettingsView: View {
                 ShortcutSettingRow(
                     title: "Press to Start",
                     description: "Starts recording until you stop from the shortcut, next key press, or pill controls.",
-                    hint: "Needs 3+ keys. Try \(appModel.tapToStartStopBinding.shortcut.symbolDisplayName) or ⌃ ⌥ SPACE",
+                    hint: pressToStartHint,
                     isEnabled: tapEnabledBinding,
                     shortcut: Binding(
                         get: { appModel.tapToStartStopBinding.shortcut },
@@ -201,6 +201,13 @@ struct SettingsView: View {
         return [short, build].compactMap { $0 }.joined(separator: " • ")
     }
 
+    private var pressToStartHint: String {
+        let current = appModel.tapToStartStopBinding.shortcut.symbolDisplayName
+        let examples = ["⌃ ⌥ SPACE", "⌃ ⇧ D"]
+        let fallback = examples.first(where: { $0 != current }) ?? examples[0]
+        return "Needs 3+ keys. Try \(fallback)"
+    }
+
     private var insetDivider: some View {
         Divider()
             .overlay(FlowTheme.border)
@@ -317,24 +324,32 @@ private struct PermissionRow: View {
     let action: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .center, spacing: 10) {
             Text(title)
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(FlowTheme.textPrimary)
-
-            Spacer()
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(2)
 
             PermissionBadge(isGranted: isGranted)
+                .fixedSize()
 
             if !isGranted {
-                Button(actionTitle, action: action)
-                    .buttonStyle(.plain)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(FlowTheme.accent)
+                Button(action: action) {
+                    Text(actionTitle)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(FlowTheme.accent)
+                        .lineLimit(1)
+                        .frame(width: 96, alignment: .trailing)
+                }
+                .buttonStyle(.plain)
+                .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.horizontal, 12)
-        .frame(height: 44)
+        .frame(minHeight: 52)
     }
 }
 
@@ -342,18 +357,11 @@ private struct PermissionBadge: View {
     let isGranted: Bool
 
     var body: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(isGranted ? FlowTheme.success : FlowTheme.error)
-                .frame(width: 6, height: 6)
-
-            Text(isGranted ? "Granted" : "Not granted")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(isGranted ? FlowTheme.success : FlowTheme.error)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(isGranted ? FlowTheme.successSubtle : FlowTheme.errorSubtle, in: Capsule(style: .continuous))
+        Image(systemName: isGranted ? "checkmark.circle.fill" : "xmark.circle.fill")
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(isGranted ? FlowTheme.success : FlowTheme.error)
+            .frame(width: 18, height: 18)
+            .accessibilityLabel(isGranted ? "Granted" : "Not granted")
     }
 }
 

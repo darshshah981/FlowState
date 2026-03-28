@@ -279,21 +279,34 @@ struct VocabularyPostProcessor {
     }
 }
 
+enum HUDVisualState: Equatable {
+    case recording(triggerMode: DictationTriggerMode, showsHint: Bool)
+    case transcribing
+    case error(message: String)
+}
+
 struct HUDState: Equatable {
-    let title: String
+    let visualState: HUDVisualState
     let subtitle: String
     let level: Double
+    let waveformLevels: [Double]
     let isVisible: Bool
     let showsSubtitle: Bool
-    let showsControls: Bool
+
+    var showsControls: Bool {
+        if case .recording(let triggerMode, _) = visualState {
+            return triggerMode == .tapToStartStop
+        }
+        return false
+    }
 
     static let idle = HUDState(
-        title: "FlowState",
-        subtitle: "Hold Option+Shift+Space to dictate",
+        visualState: .transcribing,
+        subtitle: "",
         level: 0,
+        waveformLevels: Array(repeating: 0, count: 16),
         isVisible: false,
-        showsSubtitle: false,
-        showsControls: false
+        showsSubtitle: false
     )
 }
 

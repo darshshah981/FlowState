@@ -31,6 +31,7 @@ final class DictationCoordinator {
         static let pauseThreshold: TimeInterval = 0.32
         static let activeSpeechThreshold = 0.045
         static let fastFinalizeSpeechDuration: TimeInterval = 6.2
+        static let holdHintCutoff = 3
     }
 
     var onStateChange: ((DictationSessionState) -> Void)?
@@ -51,6 +52,7 @@ final class DictationCoordinator {
     private var previewTask: Task<Void, Never>?
     private var latestPreview = PreviewTranscript(confirmedText: "", unconfirmedText: "")
     private var latestAudioLevel = 0.0
+    private var latestWaveformLevels = Array(repeating: 0.0, count: 16)
     private var lastSpeechTimestamp = Date()
     private var lastPreviewTimestamp = Date.distantPast
 
@@ -133,11 +135,11 @@ final class DictationCoordinator {
             case .listening where activeTriggerMode == .holdToTalk:
                 activeTriggerMode = .tapToStartStop
                 publishHUD(
-                    title: "Listening",
+                    visualState: .recording(triggerMode: .tapToStartStop, showsHint: false),
                     subtitle: latestPreview.composedText,
                     level: max(latestAudioLevel, 0.2),
-                    showsSubtitle: !latestPreview.composedText.isEmpty,
-                    showsControls: true
+                    waveformLevels: latestWaveformLevels,
+                    showsSubtitle: !latestPreview.composedText.isEmpty
                 )
             case .listening where activeTriggerMode == .tapToStartStop:
                 await finishDictationIfNeeded()
@@ -181,15 +183,20 @@ final class DictationCoordinator {
                     guard let self else { return }
                     await transcriptionEngine.appendAudio(chunk)
                     latestAudioLevel = level
+                    latestWaveformLevels = Self.waveformLevels(from: chunk.samples)
                     if level >= PreviewTuning.activeSpeechThreshold {
                         lastSpeechTimestamp = Date()
                     }
+                    guard state == .listening else { return }
                     publishHUD(
-                        title: "Listening",
+                        visualState: .recording(
+                            triggerMode: activeTriggerMode ?? triggerMode,
+                            showsHint: shouldShowHoldHint(for: activeTriggerMode ?? triggerMode)
+                        ),
                         subtitle: latestPreview.composedText,
                         level: level,
-                        showsSubtitle: !latestPreview.composedText.isEmpty,
-                        showsControls: activeTriggerMode == .tapToStartStop
+                        waveformLevels: latestWaveformLevels,
+                        showsSubtitle: !latestPreview.composedText.isEmpty
                     )
                 }
             }
@@ -197,11 +204,14 @@ final class DictationCoordinator {
             state = .listening
             startPreviewLoop()
             publishHUD(
-                title: "Listening",
+                visualState: .recording(
+                    triggerMode: triggerMode,
+                    showsHint: shouldShowHoldHint(for: triggerMode)
+                ),
                 subtitle: "",
                 level: 0.1,
-                showsSubtitle: false,
-                showsControls: triggerMode == .tapToStartStop
+                waveformLevels: latestWaveformLevels,
+                showsSubtitle: false
             )
         } catch {
             activeTriggerMode = nil
@@ -213,7 +223,13 @@ final class DictationCoordinator {
         guard state == .listening else { return }
 
         state = .finalizing
-        publishHUD(title: "Finalizing", subtitle: "", level: 0.3, showsSubtitle: false, showsControls: false)
+        publishHUD(
+            visualState: .transcribing,
+            subtitle: "",
+            level: 0.3,
+            waveformLevels: latestWaveformLevels,
+            showsSubtitle: false
+        )
 
         let metrics = audioCaptureService.stopCapture()
         let releasePreview = await transcriptionEngine.previewTranscript() ?? latestPreview
@@ -232,7 +248,13 @@ final class DictationCoordinator {
                 )
                 await transcriptionEngine.cancelSession()
             } else {
-                publishHUD(title: "Finalizing", subtitle: "", level: 0.35, showsSubtitle: false, showsControls: false)
+                publishHUD(
+                    visualState: .transcribing,
+                    subtitle: "",
+                    level: 0.35,
+                    waveformLevels: latestWaveformLevels,
+                    showsSubtitle: false
+                )
                 let transcript = try await transcriptionEngine.finishSession(metrics: metrics)
                 correctedText = VocabularyPostProcessor.apply(
                     to: transcript.cleanedText,
@@ -241,15 +263,22 @@ final class DictationCoordinator {
             }
 
             onTranscript?(correctedText)
+            incrementSuccessfulRecordingCount()
 
             state = .inserting
-            publishHUD(title: "Inserting", subtitle: "", level: 0.6, showsSubtitle: false, showsControls: false)
+            publishHUD(
+                visualState: .transcribing,
+                subtitle: "",
+                level: 0.6,
+                waveformLevels: latestWaveformLevels,
+                showsSubtitle: false
+            )
 
             try await textInsertionService.insert(correctedText + " ")
 
             state = .idle
             activeTriggerMode = nil
-            publishHUD(title: "Inserted", subtitle: "", level: 1, showsSubtitle: false, showsControls: false)
+            hideHUD()
 
             try await Task.sleep(for: .milliseconds(700))
             hideHUD()
@@ -259,14 +288,20 @@ final class DictationCoordinator {
         }
     }
 
-    private func publishHUD(title: String, subtitle: String, level: Double, showsSubtitle: Bool, showsControls: Bool) {
+    private func publishHUD(
+        visualState: HUDVisualState,
+        subtitle: String,
+        level: Double,
+        waveformLevels: [Double],
+        showsSubtitle: Bool
+    ) {
         let hudState = HUDState(
-            title: title,
+            visualState: visualState,
             subtitle: subtitle,
             level: level,
+            waveformLevels: waveformLevels,
             isVisible: true,
-            showsSubtitle: showsSubtitle,
-            showsControls: showsControls
+            showsSubtitle: showsSubtitle
         )
         onHUDChange?(hudState)
         hudController.update(with: hudState)
@@ -282,7 +317,17 @@ final class DictationCoordinator {
         activeTriggerMode = nil
         state = .error(message)
         onError?(message)
-        publishHUD(title: "Permission or runtime issue", subtitle: message, level: 0, showsSubtitle: true, showsControls: false)
+        publishHUD(
+            visualState: .error(message: humanizedHUDMessage(for: message)),
+            subtitle: "",
+            level: 0,
+            waveformLevels: Array(repeating: 0, count: 16),
+            showsSubtitle: false
+        )
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(2.5))
+            self?.hideHUD()
+        }
     }
 
     private var currentVocabularyText: String {
@@ -300,6 +345,7 @@ final class DictationCoordinator {
         stopPreviewLoop()
         latestPreview = PreviewTranscript(confirmedText: "", unconfirmedText: "")
         latestAudioLevel = 0
+        latestWaveformLevels = Array(repeating: 0, count: 16)
         lastSpeechTimestamp = Date()
         lastPreviewTimestamp = .distantPast
         onPreviewTranscript?(latestPreview)
@@ -333,11 +379,14 @@ final class DictationCoordinator {
                     self.latestPreview = correctedPreview
                     self.onPreviewTranscript?(correctedPreview)
                     self.publishHUD(
-                        title: "Listening",
+                        visualState: .recording(
+                            triggerMode: self.activeTriggerMode ?? .holdToTalk,
+                            showsHint: self.shouldShowHoldHint(for: self.activeTriggerMode ?? .holdToTalk)
+                        ),
                         subtitle: correctedPreview.composedText,
                         level: max(self.latestAudioLevel, 0.45),
-                        showsSubtitle: !correctedPreview.composedText.isEmpty,
-                        showsControls: self.activeTriggerMode == .tapToStartStop
+                        waveformLevels: self.latestWaveformLevels,
+                        showsSubtitle: !correctedPreview.composedText.isEmpty
                     )
                 }
             }
@@ -348,6 +397,7 @@ final class DictationCoordinator {
         previewTask?.cancel()
         previewTask = nil
         latestPreview = PreviewTranscript(confirmedText: "", unconfirmedText: "")
+        latestWaveformLevels = Array(repeating: 0, count: 16)
         onPreviewTranscript?(latestPreview)
     }
 
@@ -381,5 +431,50 @@ final class DictationCoordinator {
         activeTriggerMode = nil
         state = .idle
         hideHUD()
+    }
+
+    private func shouldShowHoldHint(for triggerMode: DictationTriggerMode) -> Bool {
+        guard triggerMode == .holdToTalk else { return false }
+        return UserDefaults.standard.integer(forKey: "FlowState.holdHintRecordingCount") < PreviewTuning.holdHintCutoff
+    }
+
+    private func incrementSuccessfulRecordingCount() {
+        let key = "FlowState.holdHintRecordingCount"
+        let count = UserDefaults.standard.integer(forKey: key)
+        UserDefaults.standard.set(count + 1, forKey: key)
+    }
+
+    private func humanizedHUDMessage(for raw: String) -> String {
+        if raw.contains("Whisper did not return any transcript text") {
+            return "Nothing picked up"
+        }
+        if raw.contains("Local Whisper unavailable") || raw.contains("loading local Whisper backend") {
+            return "Model not loaded yet"
+        }
+        if raw.contains("Microphone") {
+            return "Mic access needed"
+        }
+        return raw
+    }
+
+    private static func waveformLevels(from samples: [Float]) -> [Double] {
+        let barCount = 16
+        guard !samples.isEmpty else {
+            return Array(repeating: 0, count: barCount)
+        }
+
+        let bucketSize = max(1, samples.count / barCount)
+        return (0..<barCount).map { index in
+            let start = index * bucketSize
+            let end = min(samples.count, start + bucketSize)
+            guard start < end else { return 0 }
+
+            var sum: Float = 0
+            for sample in samples[start..<end] {
+                sum += abs(sample)
+            }
+            let average = sum / Float(end - start)
+            return min(1, Double(average * 10))
+        }
     }
 }
