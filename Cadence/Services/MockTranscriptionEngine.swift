@@ -33,7 +33,7 @@ final actor MockTranscriptionEngine: TranscriptionEngine {
     func finishSession(metrics: AudioCaptureSessionMetrics) async throws -> FinalTranscript {
         let effectiveDuration = metrics.duration > 0 ? metrics.duration : Double(totalFrames) / max(lastSampleRate, 1)
         let roundedDuration = String(format: "%.1f", effectiveDuration)
-        let text = "FlowState mock transcript captured \(roundedDuration) seconds of speech using \(configuration.summary)."
+        let text = "Cadence mock transcript captured \(roundedDuration) seconds of speech using \(configuration.summary)."
 
         return FinalTranscript(
             rawText: text,

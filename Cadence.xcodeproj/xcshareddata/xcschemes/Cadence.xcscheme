@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B3ED34AAFC4954607107B3AC"
-               BuildableName = "FlowState.app"
-               BlueprintName = "FlowState"
-               ReferencedContainer = "container:FlowState.xcodeproj">
+               BuildableName = "Cadence.app"
+               BlueprintName = "Cadence"
+               ReferencedContainer = "container:Cadence.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B3ED34AAFC4954607107B3AC"
-            BuildableName = "FlowState.app"
-            BlueprintName = "FlowState"
-            ReferencedContainer = "container:FlowState.xcodeproj">
+            BuildableName = "Cadence.app"
+            BlueprintName = "Cadence"
+            ReferencedContainer = "container:Cadence.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -45,9 +45,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2B7AFE2F373C09439DB05682"
-               BuildableName = "FlowStateTests.xctest"
-               BlueprintName = "FlowStateTests"
-               ReferencedContainer = "container:FlowState.xcodeproj">
+               BuildableName = "CadenceTests.xctest"
+               BlueprintName = "CadenceTests"
+               ReferencedContainer = "container:Cadence.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -69,9 +69,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B3ED34AAFC4954607107B3AC"
-            BuildableName = "FlowState.app"
-            BlueprintName = "FlowState"
-            ReferencedContainer = "container:FlowState.xcodeproj">
+            BuildableName = "Cadence.app"
+            BlueprintName = "Cadence"
+            ReferencedContainer = "container:Cadence.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -88,9 +88,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B3ED34AAFC4954607107B3AC"
-            BuildableName = "FlowState.app"
-            BlueprintName = "FlowState"
-            ReferencedContainer = "container:FlowState.xcodeproj">
+            BuildableName = "Cadence.app"
+            BlueprintName = "Cadence"
+            ReferencedContainer = "container:Cadence.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>

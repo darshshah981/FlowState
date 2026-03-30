@@ -13,7 +13,7 @@
 		352C865DCF261AD7CCC3A9C8 /* HUDWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E702AE4E0109F188340DEB9 /* HUDWindowController.swift */; };
 		3EC037B350A9E3556A4DE42C /* DictationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A08F97763D51B4E84ECCC4C6 /* DictationModels.swift */; };
 		458D3EE76E89550A9D112406 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00435979AD8D5B11BDAA497 /* HotkeyService.swift */; };
-		56E01B5F57508D1ED4C2039E /* FlowStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2751D89CB1FC24C27CE7C /* FlowStateTests.swift */; };
+		56E01B5F57508D1ED4C2039E /* CadenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2751D89CB1FC24C27CE7C /* CadenceTests.swift */; };
 		5A3BF0A2A737D2E9FCBBFEE4 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA3CE69CC8582DB4564F4C9A /* SettingsView.swift */; };
 		5BA192F7BC428145928FC1AB /* PermissionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E140DBFA8FC90A1216E621D /* PermissionsService.swift */; };
 		63B06AACA381556456065335 /* TextInsertionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C07D72E137AC4D4042004AB /* TextInsertionService.swift */; };
@@ -26,7 +26,7 @@
 		B78D6E38E6F3910E5AF92FDB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB25C7EAA477B12EF91129C6 /* AppDelegate.swift */; };
 		CA8ED2724BF3A00F8433367C /* TranscriptionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F86B42D6A5B7605AF7C58D01 /* TranscriptionEngine.swift */; };
 		CB11F5CC5B2DCA9A7ACC38E7 /* HUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D55C3C82972CA51191B1DA75 /* HUDView.swift */; };
-		EFD15C03891CBF91D8FA416B /* FlowStateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5ED2798DF8336DEC6F3410 /* FlowStateApp.swift */; };
+		EFD15C03891CBF91D8FA416B /* CadenceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF5ED2798DF8336DEC6F3410 /* CadenceApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,7 +35,7 @@
 			containerPortal = D95320817CFB076B990AB65D /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = B3ED34AAFC4954607107B3AC;
-			remoteInfo = FlowState;
+			remoteInfo = Cadence;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -53,15 +53,15 @@
 		BB25C7EAA477B12EF91129C6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C00435979AD8D5B11BDAA497 /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
 		CD49EF70236E15CC47A60EF0 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
-		CF5ED2798DF8336DEC6F3410 /* FlowStateApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowStateApp.swift; sourceTree = "<group>"; };
+		CF5ED2798DF8336DEC6F3410 /* CadenceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceApp.swift; sourceTree = "<group>"; };
 		D55C3C82972CA51191B1DA75 /* HUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDView.swift; sourceTree = "<group>"; };
 		D9E6138A724F9DEAA0A24F3E /* AudioCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureService.swift; sourceTree = "<group>"; };
-		DEE2751D89CB1FC24C27CE7C /* FlowStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowStateTests.swift; sourceTree = "<group>"; };
-		E2CD7B2E848586423E3ADBC0 /* FlowState.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlowState.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEE2751D89CB1FC24C27CE7C /* CadenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CadenceTests.swift; sourceTree = "<group>"; };
+		E2CD7B2E848586423E3ADBC0 /* Cadence.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cadence.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E699157182100A322460BBA0 /* MenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuContentView.swift; sourceTree = "<group>"; };
 		F86B42D6A5B7605AF7C58D01 /* TranscriptionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionEngine.swift; sourceTree = "<group>"; };
 		FA3CE69CC8582DB4564F4C9A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		FE931B3A5B203E8BBCA4854C /* FlowStateTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowStateTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE931B3A5B203E8BBCA4854C /* CadenceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CadenceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,8 +79,8 @@
 		07463E9AE2E269EF72C74570 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E2CD7B2E848586423E3ADBC0 /* FlowState.app */,
-				FE931B3A5B203E8BBCA4854C /* FlowStateTests.xctest */,
+				E2CD7B2E848586423E3ADBC0 /* Cadence.app */,
+				FE931B3A5B203E8BBCA4854C /* CadenceTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -98,7 +98,7 @@
 			children = (
 				BB25C7EAA477B12EF91129C6 /* AppDelegate.swift */,
 				ACB8304731287F9C45902B72 /* AppModel.swift */,
-				CF5ED2798DF8336DEC6F3410 /* FlowStateApp.swift */,
+				CF5ED2798DF8336DEC6F3410 /* CadenceApp.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -122,7 +122,7 @@
 			path = UI;
 			sourceTree = "<group>";
 		};
-		A8D5BBAA355967B19B67ABAF /* FlowState */ = {
+		A8D5BBAA355967B19B67ABAF /* Cadence */ = {
 			isa = PBXGroup;
 			children = (
 				60C0F241B4E00BC8DBE16693 /* App */,
@@ -130,25 +130,25 @@
 				FDF1E6A1A516C7B743D29324 /* Services */,
 				7DD5E2BF4A0034402067BA03 /* UI */,
 			);
-			path = FlowState;
+			path = Cadence;
 			sourceTree = "<group>";
 		};
 		BDFCBE74E37FCA6A2544D8AC = {
 			isa = PBXGroup;
 			children = (
-				A8D5BBAA355967B19B67ABAF /* FlowState */,
-				ECAA08400F9C3D2AB0462555 /* FlowStateTests */,
+				A8D5BBAA355967B19B67ABAF /* Cadence */,
+				ECAA08400F9C3D2AB0462555 /* CadenceTests */,
 				196ACC34C1D9B26411B261B5 /* Packages */,
 				07463E9AE2E269EF72C74570 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		ECAA08400F9C3D2AB0462555 /* FlowStateTests */ = {
+		ECAA08400F9C3D2AB0462555 /* CadenceTests */ = {
 			isa = PBXGroup;
 			children = (
-				DEE2751D89CB1FC24C27CE7C /* FlowStateTests.swift */,
+				DEE2751D89CB1FC24C27CE7C /* CadenceTests.swift */,
 			);
-			path = FlowStateTests;
+			path = CadenceTests;
 			sourceTree = "<group>";
 		};
 		FDF1E6A1A516C7B743D29324 /* Services */ = {
@@ -171,9 +171,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2B7AFE2F373C09439DB05682 /* FlowStateTests */ = {
+		2B7AFE2F373C09439DB05682 /* CadenceTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2D24508452EADE0CA99CA721 /* Build configuration list for PBXNativeTarget "FlowStateTests" */;
+			buildConfigurationList = 2D24508452EADE0CA99CA721 /* Build configuration list for PBXNativeTarget "CadenceTests" */;
 			buildPhases = (
 				50145D8F0D377511299DE6A0 /* Sources */,
 			);
@@ -182,16 +182,16 @@
 			dependencies = (
 				B9F1834DCDEAD9E4FD67843D /* PBXTargetDependency */,
 			);
-			name = FlowStateTests;
+			name = CadenceTests;
 			packageProductDependencies = (
 			);
-			productName = FlowStateTests;
-			productReference = FE931B3A5B203E8BBCA4854C /* FlowStateTests.xctest */;
+			productName = CadenceTests;
+			productReference = FE931B3A5B203E8BBCA4854C /* CadenceTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		B3ED34AAFC4954607107B3AC /* FlowState */ = {
+		B3ED34AAFC4954607107B3AC /* Cadence */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CADF37DC5C4F14B92615D4BA /* Build configuration list for PBXNativeTarget "FlowState" */;
+			buildConfigurationList = CADF37DC5C4F14B92615D4BA /* Build configuration list for PBXNativeTarget "Cadence" */;
 			buildPhases = (
 				67EE514588DB7A5767548748 /* Sources */,
 				4A4BBA2151859AB19D3D28FE /* Frameworks */,
@@ -200,12 +200,12 @@
 			);
 			dependencies = (
 			);
-			name = FlowState;
+			name = Cadence;
 			packageProductDependencies = (
 				091B9638FBE83A086BE9640F /* whisper */,
 			);
-			productName = FlowState;
-			productReference = E2CD7B2E848586423E3ADBC0 /* FlowState.app */;
+			productName = Cadence;
+			productReference = E2CD7B2E848586423E3ADBC0 /* Cadence.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -222,7 +222,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C8FCB529F8090F1265478DD5 /* Build configuration list for PBXProject "FlowState" */;
+			buildConfigurationList = C8FCB529F8090F1265478DD5 /* Build configuration list for PBXProject "Cadence" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -239,8 +239,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				B3ED34AAFC4954607107B3AC /* FlowState */,
-				2B7AFE2F373C09439DB05682 /* FlowStateTests */,
+				B3ED34AAFC4954607107B3AC /* Cadence */,
+				2B7AFE2F373C09439DB05682 /* CadenceTests */,
 			);
 		};
 /* End PBXProject section */
@@ -250,7 +250,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				56E01B5F57508D1ED4C2039E /* FlowStateTests.swift in Sources */,
+				56E01B5F57508D1ED4C2039E /* CadenceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -263,7 +263,7 @@
 				B5B3802E7FB85CFEBD4986CB /* AudioCaptureService.swift in Sources */,
 				1F7C84EF357CDA7FF73E0A76 /* DictationCoordinator.swift in Sources */,
 				3EC037B350A9E3556A4DE42C /* DictationModels.swift in Sources */,
-				EFD15C03891CBF91D8FA416B /* FlowStateApp.swift in Sources */,
+				EFD15C03891CBF91D8FA416B /* CadenceApp.swift in Sources */,
 				CB11F5CC5B2DCA9A7ACC38E7 /* HUDView.swift in Sources */,
 				352C865DCF261AD7CCC3A9C8 /* HUDWindowController.swift in Sources */,
 				458D3EE76E89550A9D112406 /* HotkeyService.swift in Sources */,
@@ -284,7 +284,7 @@
 /* Begin PBXTargetDependency section */
 		B9F1834DCDEAD9E4FD67843D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = B3ED34AAFC4954607107B3AC /* FlowState */;
+			target = B3ED34AAFC4954607107B3AC /* Cadence */;
 			targetProxy = 86DEB914E3B751ED46517688 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -300,7 +300,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_NAME = FlowState;
+				PRODUCT_NAME = Cadence;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -317,7 +317,7 @@
 					"@loader_path/../Frameworks",
 				);
 				SDKROOT = macosx;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FlowState.app/Contents/MacOS/FlowState";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Cadence.app/Contents/MacOS/Cadence";
 			};
 			name = Debug;
 		};
@@ -367,14 +367,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = FlowState;
+				INFOPLIST_KEY_CFBundleDisplayName = Cadence;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "FlowState needs microphone access for push-to-talk dictation.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Cadence needs microphone access for push-to-talk dictation.";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.darshshah.FlowState;
+				PRODUCT_BUNDLE_IDENTIFIER = com.darshshah.Cadence;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -393,7 +393,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_NAME = FlowState;
+				PRODUCT_NAME = Cadence;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -410,7 +410,7 @@
 					"@loader_path/../Frameworks",
 				);
 				SDKROOT = macosx;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FlowState.app/Contents/MacOS/FlowState";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Cadence.app/Contents/MacOS/Cadence";
 			};
 			name = Release;
 		};
@@ -466,15 +466,15 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = FlowState;
+				INFOPLIST_KEY_CFBundleDisplayName = Cadence;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "FlowState needs microphone access for push-to-talk dictation.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Cadence needs microphone access for push-to-talk dictation.";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.darshshah.FlowState;
+				PRODUCT_BUNDLE_IDENTIFIER = com.darshshah.Cadence;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -486,7 +486,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2D24508452EADE0CA99CA721 /* Build configuration list for PBXNativeTarget "FlowStateTests" */ = {
+		2D24508452EADE0CA99CA721 /* Build configuration list for PBXNativeTarget "CadenceTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2C9000457F20DA25D0231047 /* Debug */,
@@ -495,7 +495,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		C8FCB529F8090F1265478DD5 /* Build configuration list for PBXProject "FlowState" */ = {
+		C8FCB529F8090F1265478DD5 /* Build configuration list for PBXProject "Cadence" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D4191A0BC5ADD64E55BD188D /* Debug */,
@@ -504,7 +504,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		CADF37DC5C4F14B92615D4BA /* Build configuration list for PBXNativeTarget "FlowState" */ = {
+		CADF37DC5C4F14B92615D4BA /* Build configuration list for PBXNativeTarget "Cadence" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				18C1001F6B1928570EA62286 /* Debug */,

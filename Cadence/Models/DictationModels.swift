@@ -153,9 +153,35 @@ enum WhisperDecodingMode: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+enum FillerWordPolicy: String, CaseIterable, Identifiable, Sendable {
+    case preserve
+    case remove
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .preserve:
+            return "Literal"
+        case .remove:
+            return "Cleaned"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .preserve:
+            return "Keep filler words like um, uh, and like."
+        case .remove:
+            return "Strip common filler words after transcription."
+        }
+    }
+}
+
 struct TranscriptionConfiguration: Equatable, Sendable {
     var model: WhisperModelOption = .baseEnglish
     var decodingMode: WhisperDecodingMode = .greedy
+    var fillerWordPolicy: FillerWordPolicy = .preserve
     var keepContext: Bool = true
     var trimSilence: Bool = true
     var normalizeAudio: Bool = true
@@ -165,6 +191,7 @@ struct TranscriptionConfiguration: Equatable, Sendable {
 
     var summary: String {
         "\(model.shortLabel) • \(decodingMode.shortLabel) • " +
+        fillerWordPolicy.rawValue + " • " +
         (keepContext ? "context" : "isolated") + " • " +
         (trimSilence ? "trim" : "raw") + " • " +
         (normalizeAudio ? "normalize" : "natural")
@@ -246,9 +273,10 @@ struct VocabularyEntry: Equatable, Sendable {
 }
 
 struct VocabularyPostProcessor {
-    static func apply(to text: String, vocabularyText: String) -> String {
-        let entries = VocabularyEntry.parseList(from: vocabularyText)
-        guard !entries.isEmpty else { return text }
+    static func apply(to text: String, configuration: TranscriptionConfiguration) -> String {
+        let withoutFillers = applyFillerWordPolicy(to: text, policy: configuration.fillerWordPolicy)
+        let entries = VocabularyEntry.parseList(from: configuration.vocabularyText)
+        guard !entries.isEmpty else { return withoutFillers }
 
         let replacements = entries
             .flatMap { entry in
@@ -258,9 +286,48 @@ struct VocabularyPostProcessor {
             }
             .sorted { $0.0.count > $1.0.count }
 
-        return replacements.reduce(text) { partial, replacement in
+        return replacements.reduce(withoutFillers) { partial, replacement in
             replaceOccurrences(of: replacement.0, with: replacement.1, in: partial)
         }
+    }
+
+    private static func applyFillerWordPolicy(to text: String, policy: FillerWordPolicy) -> String {
+        guard policy == .remove else { return text }
+
+        let fillers = [
+            "um",
+            "uh",
+            "erm",
+            "ah",
+            "like",
+            "you know",
+            "i mean"
+        ]
+
+        let pattern = "(?i)(?<![[:alnum:]])\\s*,?\\s*(?:\(fillers.map(NSRegularExpression.escapedPattern).joined(separator: "|")))\\s*,?\\s*(?![[:alnum:]])"
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            return text
+        }
+
+        let stripped = regex.stringByReplacingMatches(
+            in: text,
+            options: [],
+            range: NSRange(text.startIndex..., in: text),
+            withTemplate: ""
+        )
+
+        return stripped
+            .replacingOccurrences(of: "(^|\\s)[,]+", with: " ", options: .regularExpression)
+            .replacingOccurrences(of: ",\\s*([,.!?;:])", with: "$1", options: .regularExpression)
+            .replacingOccurrences(
+                of: ",\\s+(?=(?:a|an|the|this|that|these|those|i|you|we|they|he|she|it)\\b)",
+                with: " ",
+                options: .regularExpression
+            )
+            .replacingOccurrences(of: "\\s+([,.;:!?])", with: "$1", options: .regularExpression)
+            .replacingOccurrences(of: ",\\s*,+", with: ", ", options: .regularExpression)
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private static func replaceOccurrences(of source: String, with target: String, in text: String) -> String {

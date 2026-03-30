@@ -358,7 +358,7 @@ private struct EmptyTranscriptStateView: View {
                 .font(.system(size: 28, weight: .regular))
                 .foregroundStyle(FlowTheme.textTertiary)
 
-            Text(needsPermissions ? "Set up FlowState" : "No transcripts yet")
+            Text(needsPermissions ? "Set up Cadence" : "No transcripts yet")
                 .font(.system(size: 20, weight: .semibold))
                 .kerning(-0.2)
                 .foregroundStyle(FlowTheme.textPrimary)

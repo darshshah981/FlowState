@@ -88,6 +88,26 @@ struct SettingsView: View {
                     )
                 }
                 .padding(12)
+
+                insetDivider
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Fillers")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(FlowTheme.textPrimary)
+
+                    FillerWordSegmentedControl(
+                        selection: Binding(
+                            get: { appModel.transcriptionConfiguration.fillerWordPolicy },
+                            set: { appModel.setFillerWordPolicy($0) }
+                        )
+                    )
+
+                    Text(appModel.transcriptionConfiguration.fillerWordPolicy.description)
+                        .font(.system(size: 12))
+                        .foregroundStyle(FlowTheme.textSecondary)
+                }
+                .padding(12)
             }
         }
     }
@@ -188,7 +208,7 @@ struct SettingsView: View {
     }
 
     private var versionFooter: some View {
-        Text("FlowState \(appVersion)")
+        Text("Cadence \(appVersion)")
             .font(.system(size: 11))
             .foregroundStyle(FlowTheme.textTertiary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -287,6 +307,37 @@ private struct FlowInfoRow: View {
         }
         .padding(.horizontal, 12)
         .frame(height: 40)
+    }
+}
+
+private struct FillerWordSegmentedControl: View {
+    @Binding var selection: FillerWordPolicy
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(FillerWordPolicy.allCases) { policy in
+                Button {
+                    selection = policy
+                } label: {
+                    Text(policy.displayName)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(selection == policy ? FlowTheme.textPrimary : FlowTheme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 28)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(selection == policy ? FlowTheme.elevated : Color.clear)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(FlowTheme.subtle, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(FlowTheme.border, lineWidth: 1)
+        )
     }
 }
 

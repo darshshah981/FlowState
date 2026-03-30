@@ -1,4 +1,4 @@
-name: FlowState
+name: Cadence
 options:
   bundleIdPrefix: com.darshshah
   deploymentTarget:
@@ -6,39 +6,39 @@ options:
 settings:
   base:
     SWIFT_VERSION: 5.10
-    PRODUCT_BUNDLE_IDENTIFIER: com.darshshah.FlowState
+    PRODUCT_BUNDLE_IDENTIFIER: com.darshshah.Cadence
     GENERATE_INFOPLIST_FILE: YES
-    INFOPLIST_KEY_CFBundleDisplayName: FlowState
+    INFOPLIST_KEY_CFBundleDisplayName: Cadence
     INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
     INFOPLIST_KEY_LSUIElement: YES
-    INFOPLIST_KEY_NSMicrophoneUsageDescription: FlowState needs microphone access for push-to-talk dictation.
+    INFOPLIST_KEY_NSMicrophoneUsageDescription: Cadence needs microphone access for push-to-talk dictation.
 packages:
   whisper:
     path: Vendor/whisper.spm
 
 targets:
-  FlowState:
+  Cadence:
     type: application
     platform: macOS
     sources:
-      - path: FlowState
+      - path: Cadence
     dependencies:
       - package: whisper
         product: whisper
     settings:
       base:
-        PRODUCT_NAME: FlowState
+        PRODUCT_NAME: Cadence
         CODE_SIGN_STYLE: Automatic
     scheme:
       testTargets:
-        - FlowStateTests
-  FlowStateTests:
+        - CadenceTests
+  CadenceTests:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - path: FlowStateTests
+      - path: CadenceTests
     dependencies:
-      - target: FlowState
+      - target: Cadence
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

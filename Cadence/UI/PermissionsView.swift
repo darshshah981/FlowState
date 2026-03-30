@@ -29,7 +29,7 @@ struct PermissionsView: View {
                 action: appModel.requestInputMonitoringAccess
             )
 
-            Text("If macOS still shows the wrong status, remove old FlowState entries in Privacy & Security and enable the exact app bundle you launched from this path:\n\(Bundle.main.bundleURL.path)")
+            Text("If macOS still shows the wrong status, remove old Cadence entries in Privacy & Security and enable the exact app bundle you launched from this path:\n\(Bundle.main.bundleURL.path)")
                 .font(.system(size: 11.5))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

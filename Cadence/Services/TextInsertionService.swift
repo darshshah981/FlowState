@@ -11,7 +11,7 @@ final class TextInsertionService: TextInsertionServing {
 
     func insert(_ text: String) async throws {
         guard AXIsProcessTrusted() else {
-            throw FlowStateError.accessibilityPermissionMissing
+            throw CadenceError.accessibilityPermissionMissing
         }
 
         try await postUnicodeString(text)
@@ -26,14 +26,14 @@ final class TextInsertionService: TextInsertionServing {
 
     private func postUnicodeString(_ text: String) async throws {
         guard let source = CGEventSource(stateID: .hidSystemState) else {
-            throw FlowStateError.eventSourceUnavailable
+            throw CadenceError.eventSourceUnavailable
         }
 
         for scalar in text.utf16 {
             try autoreleasepool {
                 guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true),
                       let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false) else {
-                    throw FlowStateError.eventSourceUnavailable
+                    throw CadenceError.eventSourceUnavailable
                 }
 
                 var value = scalar
@@ -49,7 +49,7 @@ final class TextInsertionService: TextInsertionServing {
         guard let source = CGEventSource(stateID: .hidSystemState),
               let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true),
               let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false) else {
-            throw FlowStateError.eventSourceUnavailable
+            throw CadenceError.eventSourceUnavailable
         }
 
         keyDown.flags = modifiers

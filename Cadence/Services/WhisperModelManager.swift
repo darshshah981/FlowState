@@ -31,7 +31,7 @@ actor WhisperModelManager {
         )
 
         return appSupport
-            .appendingPathComponent("FlowState", isDirectory: true)
+            .appendingPathComponent("Cadence", isDirectory: true)
             .appendingPathComponent("Models", isDirectory: true)
             .appendingPathComponent(model.fileName, isDirectory: false)
     }

@@ -418,7 +418,7 @@ enum WhisperEngineError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .contextInitializationFailed:
-            return "FlowState could not initialize the local Whisper model."
+            return "Cadence could not initialize the local Whisper model."
         case .emptyAudio:
             return "No speech audio was captured."
         case .noTranscript:

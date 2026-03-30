@@ -1,6 +1,6 @@
 import Foundation
 
-enum FlowStateError: LocalizedError {
+enum CadenceError: LocalizedError {
     case missingRequiredPermissions
     case audioInputUnavailable
     case accessibilityPermissionMissing
@@ -16,7 +16,7 @@ enum FlowStateError: LocalizedError {
         case .accessibilityPermissionMissing:
             return "Accessibility permission is required for direct text insertion."
         case .eventSourceUnavailable:
-            return "FlowState could not post keyboard events."
+            return "Cadence could not post keyboard events."
         case .dictationAlreadyRunning:
             return "A dictation session is already in progress."
         }
@@ -47,6 +47,7 @@ final class DictationCoordinator {
     private let transcriptionEngine: TranscriptionEngine
     private let textInsertionService: TextInsertionServing
     private let hudController: HUDWindowController
+    private var transcriptionConfiguration = TranscriptionConfiguration()
     private var activeTriggerMode: DictationTriggerMode?
     private var stopTapDictationOnNextKeyPress = false
     private var previewTask: Task<Void, Never>?
@@ -96,10 +97,11 @@ final class DictationCoordinator {
     }
 
     func insertPreviewText() async throws {
-        try await textInsertionService.insert("FlowState preview insert.\n")
+        try await textInsertionService.insert("Cadence preview insert.\n")
     }
 
     func updateTranscriptionConfiguration(_ configuration: TranscriptionConfiguration) async throws -> String {
+        transcriptionConfiguration = configuration
         stopTapDictationOnNextKeyPress = configuration.tapStopsOnNextKeyPress
         try await transcriptionEngine.updateConfiguration(configuration)
         let summary = await transcriptionEngine.statusSummary()
@@ -170,7 +172,7 @@ final class DictationCoordinator {
         do {
             let permissions = permissionsService.snapshot()
             guard permissions.allRequiredGranted else {
-                throw FlowStateError.missingRequiredPermissions
+                throw CadenceError.missingRequiredPermissions
             }
 
             activeTriggerMode = triggerMode
@@ -242,10 +244,7 @@ final class DictationCoordinator {
                 let previewText = releasePreview.composedText
                     .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
                     .trimmingCharacters(in: .whitespacesAndNewlines)
-                correctedText = VocabularyPostProcessor.apply(
-                    to: previewText,
-                    vocabularyText: currentVocabularyText
-                )
+                correctedText = applyPostProcessing(to: previewText)
                 await transcriptionEngine.cancelSession()
             } else {
                 publishHUD(
@@ -256,10 +255,7 @@ final class DictationCoordinator {
                     showsSubtitle: false
                 )
                 let transcript = try await transcriptionEngine.finishSession(metrics: metrics)
-                correctedText = VocabularyPostProcessor.apply(
-                    to: transcript.cleanedText,
-                    vocabularyText: currentVocabularyText
-                )
+                correctedText = applyPostProcessing(to: transcript.cleanedText)
             }
 
             onTranscript?(correctedText)
@@ -330,10 +326,6 @@ final class DictationCoordinator {
         }
     }
 
-    private var currentVocabularyText: String {
-        UserDefaults.standard.string(forKey: "FlowState.vocabularyText") ?? ""
-    }
-
     private var isErrorState: Bool {
         if case .error = state {
             return true
@@ -367,14 +359,8 @@ final class DictationCoordinator {
                 if let preview = await self.transcriptionEngine.previewTranscript() {
                     self.lastPreviewTimestamp = now
                     let correctedPreview = PreviewTranscript(
-                        confirmedText: VocabularyPostProcessor.apply(
-                            to: preview.confirmedText,
-                            vocabularyText: self.currentVocabularyText
-                        ),
-                        unconfirmedText: VocabularyPostProcessor.apply(
-                            to: preview.unconfirmedText,
-                            vocabularyText: self.currentVocabularyText
-                        )
+                        confirmedText: self.applyPostProcessing(to: preview.confirmedText),
+                        unconfirmedText: self.applyPostProcessing(to: preview.unconfirmedText)
                     )
                     self.latestPreview = correctedPreview
                     self.onPreviewTranscript?(correctedPreview)
@@ -416,6 +402,10 @@ final class DictationCoordinator {
         return wordCount >= 2 || text.count >= 12
     }
 
+    private func applyPostProcessing(to text: String) -> String {
+        VocabularyPostProcessor.apply(to: text, configuration: transcriptionConfiguration)
+    }
+
     private func stopFromHUD() async {
         guard activeTriggerMode == .tapToStartStop else { return }
         await finishDictationIfNeeded()
@@ -435,11 +425,11 @@ final class DictationCoordinator {
 
     private func shouldShowHoldHint(for triggerMode: DictationTriggerMode) -> Bool {
         guard triggerMode == .holdToTalk else { return false }
-        return UserDefaults.standard.integer(forKey: "FlowState.holdHintRecordingCount") < PreviewTuning.holdHintCutoff
+        return UserDefaults.standard.integer(forKey: "Cadence.holdHintRecordingCount") < PreviewTuning.holdHintCutoff
     }
 
     private func incrementSuccessfulRecordingCount() {
-        let key = "FlowState.holdHintRecordingCount"
+        let key = "Cadence.holdHintRecordingCount"
         let count = UserDefaults.standard.integer(forKey: key)
         UserDefaults.standard.set(count + 1, forKey: key)
     }

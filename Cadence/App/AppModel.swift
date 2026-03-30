@@ -13,6 +13,7 @@ final class AppModel: ObservableObject {
     private enum PreferenceKey {
         static let whisperModel = "FlowState.whisperModel"
         static let decodingMode = "FlowState.decodingMode"
+        static let fillerWordPolicy = "FlowState.fillerWordPolicy"
         static let keepContext = "FlowState.keepContext"
         static let trimSilence = "FlowState.trimSilence"
         static let normalizeAudio = "FlowState.normalizeAudio"
@@ -178,6 +179,10 @@ final class AppModel: ObservableObject {
 
     func setDecodingMode(_ decodingMode: WhisperDecodingMode) {
         updateTranscriptionConfiguration { $0.decodingMode = decodingMode }
+    }
+
+    func setFillerWordPolicy(_ fillerWordPolicy: FillerWordPolicy) {
+        updateTranscriptionConfiguration { $0.fillerWordPolicy = fillerWordPolicy }
     }
 
     func setKeepContext(_ keepContext: Bool) {
@@ -399,6 +404,7 @@ final class AppModel: ObservableObject {
     private func persist(configuration: TranscriptionConfiguration) {
         defaults.set(configuration.model.rawValue, forKey: PreferenceKey.whisperModel)
         defaults.set(configuration.decodingMode.rawValue, forKey: PreferenceKey.decodingMode)
+        defaults.set(configuration.fillerWordPolicy.rawValue, forKey: PreferenceKey.fillerWordPolicy)
         defaults.set(configuration.keepContext, forKey: PreferenceKey.keepContext)
         defaults.set(configuration.trimSilence, forKey: PreferenceKey.trimSilence)
         defaults.set(configuration.normalizeAudio, forKey: PreferenceKey.normalizeAudio)
@@ -431,6 +437,11 @@ final class AppModel: ObservableObject {
         if let rawValue = defaults.string(forKey: PreferenceKey.decodingMode),
            let decodingMode = WhisperDecodingMode(rawValue: rawValue) {
             configuration.decodingMode = decodingMode
+        }
+
+        if let rawValue = defaults.string(forKey: PreferenceKey.fillerWordPolicy),
+           let fillerWordPolicy = FillerWordPolicy(rawValue: rawValue) {
+            configuration.fillerWordPolicy = fillerWordPolicy
         }
 
         if defaults.object(forKey: PreferenceKey.keepContext) != nil {

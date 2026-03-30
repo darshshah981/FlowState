@@ -1,8 +1,8 @@
 import Carbon
 import Testing
-@testable import FlowState
+@testable import Cadence
 
-struct FlowStateTests {
+struct CadenceTests {
     @Test
     func permissionsSnapshotRequiresMicrophoneAndAccessibility() {
         let snapshot = PermissionsSnapshot(
@@ -81,6 +81,7 @@ struct FlowStateTests {
 
         #expect(configuration.model == .baseEnglish)
         #expect(configuration.decodingMode == .greedy)
+        #expect(configuration.fillerWordPolicy == .preserve)
         #expect(configuration.keepContext)
         #expect(configuration.trimSilence)
         #expect(configuration.normalizeAudio)
@@ -104,12 +105,24 @@ struct FlowStateTests {
     func vocabularyPostProcessorRewritesAliasesPreservingPunctuation() {
         let result = VocabularyPostProcessor.apply(
             to: "anthropik, kuber netties and Anthropic.",
-            vocabularyText: """
-            Anthropic: anthropik
-            Kubernetes: kuber netties
-            """
+            configuration: TranscriptionConfiguration(
+                vocabularyText: """
+                Anthropic: anthropik
+                Kubernetes: kuber netties
+                """
+            )
         )
 
         #expect(result == "Anthropic, Kubernetes and Anthropic.")
+    }
+
+    @Test
+    func fillerWordPolicyCanRemoveCommonFillers() {
+        let result = VocabularyPostProcessor.apply(
+            to: "Um, I mean, this is, like, a test.",
+            configuration: TranscriptionConfiguration(fillerWordPolicy: .remove)
+        )
+
+        #expect(result == "this is a test.")
     }
 }
